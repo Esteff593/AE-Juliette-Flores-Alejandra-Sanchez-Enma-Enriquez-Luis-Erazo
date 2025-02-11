@@ -1,0 +1,177 @@
+
+//Modelo (Producto e Inventario)
+package modelo;
+
+import java.util.ArrayList;
+
+public class Inventario {
+    private ArrayList<Producto> productos;
+
+    public Inventario() {
+        this.productos = new ArrayList<>();
+    }
+
+    public void registrarProducto(String nombre, double precio, int cantidad) {
+        productos.add(new Producto(nombre, precio, cantidad));
+    }
+
+    public void actualizarInventario(String nombre, int cantidad) {
+        for (Producto producto : productos) {
+            if (producto.getNombre().equalsIgnoreCase(nombre)) {
+                producto.setCantidad(cantidad);
+                break;
+            }
+        }
+    }
+
+    public ArrayList<Producto> consultarProductos() {
+        return productos;
+    }
+
+    public double calcularValorTotal() {
+        double total = 0;
+        for (Producto p : productos) {
+            total += p.getPrecio() * p.getCantidad();
+        }
+        return total;
+    }
+}
+```
+
+```java
+package modelo;
+
+public class Producto {
+    private String nombre;
+    private double precio;
+    private int cantidad;
+
+    public Producto(String nombre, double precio, int cantidad) {
+        this.nombre = nombre;
+        this.precio = precio;
+        this.cantidad = cantidad;
+    }
+
+    public String getNombre() { return nombre; }
+    public double getPrecio() { return precio; }
+    public int getCantidad() { return cantidad; }
+    
+    public void setCantidad(int cantidad) { this.cantidad = cantidad; }
+}
+```
+
+---
+
+//2. Vista (Consola)**
+
+package vista;
+
+import java.util.Scanner;
+
+public class VistaConsola {
+    private Scanner scanner;
+
+    public VistaConsola() {
+        scanner = new Scanner(System.in);
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        System.out.println(mensaje);
+    }
+
+    public String solicitarTexto(String mensaje) {
+        System.out.print(mensaje);
+        return scanner.nextLine();
+    }
+
+    public double solicitarDouble(String mensaje) {
+        System.out.print(mensaje);
+        return scanner.nextDouble();
+    }
+
+    public int solicitarEntero(String mensaje) {
+        System.out.print(mensaje);
+        return scanner.nextInt();
+    }
+}
+```
+
+---
+//3. Controlador**
+```java
+package controlador;
+
+import modelo.Inventario;
+import modelo.Producto;
+import vista.VistaConsola;
+
+public class ControladorInventario {
+    private Inventario modelo;
+    private VistaConsola vista;
+
+    public ControladorInventario(Inventario modelo, VistaConsola vista) {
+        this.modelo = modelo;
+        this.vista = vista;
+    }
+
+    public void agregarProducto() {
+        String nombre = vista.solicitarTexto("Ingrese el nombre del producto: ");
+        double precio = vista.solicitarDouble("Ingrese el precio: ");
+        int cantidad = vista.solicitarEntero("Ingrese la cantidad: ");
+        modelo.registrarProducto(nombre, precio, cantidad);
+        vista.mostrarMensaje("Producto registrado con éxito.");
+    }
+
+    public void mostrarInventario() {
+        vista.mostrarMensaje("\nInventario:");
+        for (Producto p : modelo.consultarProductos()) {
+            vista.mostrarMensaje("Producto: " + p.getNombre() + 
+                                 ", Precio: $" + p.getPrecio() + 
+                                 ", Cantidad: " + p.getCantidad());
+        }
+    }
+
+    public void calcularValor() {
+        double valor = modelo.calcularValorTotal();
+        vista.mostrarMensaje("Valor total del inventario: $" + valor);
+    }
+}
+```
+
+---
+
+## **4. Clase Principal (Main)**
+package main;
+
+import controlador.ControladorInventario;
+import modelo.Inventario;
+import vista.VistaConsola;
+
+public class Main {
+    public static void main(String[] args) {
+        Inventario modelo = new Inventario();
+        VistaConsola vista = new VistaConsola();
+        ControladorInventario controlador = new ControladorInventario(modelo, vista);
+
+        while (true) {
+            vista.mostrarMensaje("\n1. Agregar Producto");
+            vista.mostrarMensaje("2. Mostrar Inventario");
+            vista.mostrarMensaje("3. Calcular Valor Total");
+            vista.mostrarMensaje("4. Salir");
+
+            int opcion = vista.solicitarEntero("Seleccione una opción: ");
+            vista.solicitarTexto("");  // Limpia el buffer
+
+            switch (opcion) {
+                case 1 -> controlador.agregarProducto();
+                case 2 -> controlador.mostrarInventario();
+                case 3 -> controlador.calcularValor();
+                case 4 -> {
+                    vista.mostrarMensaje("Saliendo del sistema...");
+                    System.exit(0);
+                }
+                default -> vista.mostrarMensaje("Opción no válida.");
+            }
+        }
+    }
+}
